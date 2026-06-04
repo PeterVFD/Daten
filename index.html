@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <script>
+    window.PROTECTED_HUB_URL = "https://petervfd.github.io/haupt/";
+  </script>
+  <script src="schutz.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Byte-Rechner & Preisrechner</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary-color: #64748b;
+            --secondary-hover: #475569;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #0f172a;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 233, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 25px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-calc {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-calc:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-reset {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background-color: var(--secondary-hover);
+        }
+
+        .results-section {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+            display: none;
+        }
+
+        .results-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+            color: #334155;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 0.95rem;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #64748b;
+        }
+
+        .result-value {
+            font-weight: 600;
+        }
+
+        .divider {
+            margin: 15px 0 10px 0;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Byte → KB / MB / GB + Preisrechner</h2>
+    
+    <div class="form-group">
+        <label for="bytesInput">Eingabe in Byte:</label>
+        <input type="text" id="bytesInput" placeholder="z.B. 1048576">
+    </div>
+
+    <div class="form-group">
+        <label for="factor">Eingabe EUR pro MB:</label>
+        <input type="text" id="factor" value="0.03">
+    </div>
+
+    <div class="form-group">
+        <label for="usedMB">Verbrauchte MB (optional):</label>
+        <input type="text" id="usedMB" placeholder="Wird automatisch berechnet">
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-calc" onclick="calculate()">Umrechnen & Berechnen</button>
+        <button class="btn-reset" onclick="resetForm()">Reset</button>
+    </div>
+
+    <div class="results-section" id="results">
+        <h3>Ergebnisse:</h3>
+        
+        <div class="result-row"><span class="result-label">Eingabe:</span><span class="result-value" id="outByte">-</span></div>
+        <div class="result-row"><span class="result-label">Kilobyte (KB):</span><span class="result-value" id="outKB">-</span></div>
+        <div class="result-row"><span class="result-label">Megabyte (MB):</span><span class="result-value" id="outMB">-</span></div>
+        <div class="result-row"><span class="result-label">Gigabyte (GB):</span><span class="result-value" id="outGB">-</span></div>
+        
+        <div class="divider">Berechnung (MB x EUR pro MB)</div>
+        
+        <div class="result-row"><span class="result-label">EUR pro MB:</span><span class="result-value" id="outFactor">-</span></div>
+        <div class="result-row"><span class="result-label">Berechnete MB:</span><span class="result-value" id="outMBxFact">-</span></div>
+        <div class="result-row"><span class="result-label">Verbrauchte MB:</span><span class="result-value" id="outUsedMB">-</span></div>
+        <div class="result-row"><span class="result-label">Netto (berechnete MB):</span><span class="result-value" id="outNetto">-</span></div>
+        <div class="result-row"><span class="result-label">Brutto (inkl. 19% MwSt):</span><span class="result-value" id="outBrutto">-</span></div>
+    </div>
+</div>
+
+<script>
+    function calculate() {
+        // Inputs auslesen und Komma durch Punkt ersetzen
+        let bytesRaw = document.getElementById('bytesInput').value.trim().replace(',', '.');
+        let factorRaw = document.getElementById('factor').value.trim().replace(',', '.');
+        let usedMBRaw = document.getElementById('usedMB').value.trim().replace(',', '.');
+
+        // Validierung
+        if (bytesRaw === "" || isNaN(bytesRaw)) {
+            alert("Bitte eine gültige Byte-Zahl eingeben!");
+            return;
+        }
+        if (factorRaw === "" || isNaN(factorRaw)) {
+            alert("Bitte einen gültigen EUR-Wert pro MB eingeben!");
+            return;
+        }
+
+        let bytesInput = parseFloat(bytesRaw);
+        let factor = parseFloat(factorRaw);
+
+        // Umrechnung (Logik exakt wie im AHK-Skript via kaskadierendem Round)
+        let kb = Math.round((bytesInput / 1024) * 100) / 100;
+        let mb = Math.round((kb / 1024) * 100) / 100;
+        let gb = Math.round((mb / 1024) * 100) / 100;
+
+        // Verbrauchte MB automatisch setzen, falls leer
+        if (usedMBRaw === "") {
+            usedMBRaw = mb.toString();
+            document.getElementById('usedMB').value = mb.toString().replace('.', ',');
+        }
+
+        if (isNaN(usedMBRaw)) {
+            alert("Die verbrauchten MB sind ungültig!");
+            return;
+        }
+        let usedMB = parseFloat(usedMBRaw);
+
+        // Preisberechnungen
+        let netto = Math.round((mb * factor) * 100) / 100;
+        let brutto = Math.round((netto * 1.19) * 100) / 100;
+
+        let usedMBPreisNetto = Math.round((usedMB * factor) * 100) / 100;
+        let usedMBPreisBrutto = Math.round((usedMBPreisNetto * 1.19) * 100) / 100;
+
+        // Ausgabe in die UI
+        document.getElementById('outByte').innerText = bytesInput.toLocaleString('de-DE') + " Byte";
+        document.getElementById('outKB').innerText = kb.toLocaleString('de-DE') + " KB";
+        document.getElementById('outMB').innerText = mb.toLocaleString('de-DE') + " MB";
+        document.getElementById('outGB').innerText = gb.toLocaleString('de-DE') + " GB";
+        
+        document.getElementById('outFactor').innerText = factor.toFixed(4).replace('.', ',') + " EUR";
+        document.getElementById('outMBxFact').innerText = mb.toLocaleString('de-DE') + " * " + factor.toLocaleString('de-DE') + " = " + netto.toFixed(2).replace('.', ',') + " EUR Netto";
+        document.getElementById('outUsedMB').innerText = usedMB.toLocaleString('de-DE') + " * " + factor.toLocaleString('de-DE') + " = " + usedMBPreisNetto.toFixed(2).replace('.', ',') + " EUR Netto / " + usedMBPreisBrutto.toFixed(2).replace('.', ',') + " EUR Brutto";
+        
+        document.getElementById('outNetto').innerText = netto.toFixed(2).replace('.', ',') + " EUR";
+        document.getElementById('outBrutto').innerText = brutto.toFixed(2).replace('.', ',') + " EUR";
+
+        // Resultat-Box sichtbar machen
+        document.getElementById('results').style.display = 'block';
+    }
+
+    function resetForm() {
+        document.getElementById('bytesInput').value = "";
+        document.getElementById('factor').value = "0,03";
+        document.getElementById('usedMB').value = "";
+        document.getElementById('results').style.style.display = 'none';
+        document.getElementById('bytesInput').focus();
+    }
+</script>
+
+</body>
+</html>
